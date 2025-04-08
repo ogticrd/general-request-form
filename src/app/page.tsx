@@ -27,9 +27,9 @@ interface FormValues {
   developmentType: 'Nuevo desarrollo' | 'Modificación';
   includesDataLoad: boolean;
   dataType?: any;
-  dataSource?: string;
+  // dataSource?: string;
   dataFrequency?: any;
-  metadataUpdate: boolean;
+  // metadataUpdate: boolean;
   systemIntegration: boolean;
   integratedSystems?: string;
 
@@ -70,10 +70,10 @@ const schema: yup.ObjectSchema<FormValues> = yup.object({
     is: true,
     then: (schema) => schema.min(1, 'Debe seleccionar al menos un tipo de dato').required('Tipo de datos requerido'),
   }),
-  dataSource: yup.string().optional().when('includesDataLoad', {
-    is: true,
-    then: (schema) => schema.required('Fuente requerida'),
-  }),
+  // dataSource: yup.string().optional().when('includesDataLoad', {
+  //   is: true,
+  //   then: (schema) => schema.required('Fuente requerida'),
+  // }),
   dataFrequency: yup
     .object()
     .shape({
@@ -91,7 +91,7 @@ const schema: yup.ObjectSchema<FormValues> = yup.object({
           }),
       otherwise: (schema) => schema.nullable().notRequired(),
     }),
-  metadataUpdate: yup.boolean().required('Campo requerido'),
+  // metadataUpdate: yup.boolean().required('Campo requerido'),
   systemIntegration: yup.boolean().required('Campo requerido'),
   integratedSystems: yup.string().optional().when('systemIntegration', {
     is: true,
@@ -136,9 +136,12 @@ export default function Home() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
+    // defaultValues: {
+    //   dataFrequency: dataFrequencyOptions[0]
+    // }
   });
   console.log(errors)
-  console.log('watch', watch)
+  console.log('watch', watch())
 
   const includesDataLoad = Boolean(watch('includesDataLoad'));
   const systemIntegration = Boolean(watch('systemIntegration'));
@@ -276,7 +279,14 @@ export default function Home() {
                 <RadioGroup
                   row
                   {...field}
-                  onChange={(e: any) => setValue('includesDataLoad', e?.target?.value === 'true' ? true : false)}
+                  onChange={(e: any) => {
+                    if (e?.target?.value === 'true') {
+                      setValue('includesDataLoad', true)
+                      setValue("dataFrequency", { ...dataFrequencyOptions[0] })
+                    } else {
+                      setValue('includesDataLoad', false)
+                    }
+                  }}
                 >
                   <FormControlLabel value={'true'} control={<Radio />} label="Sí" />
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
@@ -296,16 +306,17 @@ export default function Home() {
                     <p className="txt-red">{errors.dataType?.message as string}</p>
                   </GridItem>
 
-                  <GridItem>
+                  {/* <GridItem>
                     <label className='label2'>Fuente de los datos</label>
                     <input {...register('dataSource')} className="input" />
                     <p className="txt-red">{errors.dataSource?.message}</p>
-                  </GridItem>
+                  </GridItem> */}
 
                   <GridItem>
                     <label className='label2'>Periodicidad de la carga</label>
                     <Select
                       placeholder="Seleccionar"
+                      defaultValue={dataFrequencyOptions[0]}
                       options={dataFrequencyOptions}
                       onChange={(e: any) => setValue("dataFrequency", e)}
                     />
@@ -315,7 +326,7 @@ export default function Home() {
               )}
             </GridItem>
 
-            <GridItem lg={8} md={12}>
+            {/* <GridItem lg={8} md={12}>
               <label className='label'>¿Requiere actualización de metadatos?</label>
               <Controller control={control} name="metadataUpdate" render={({ field }) => (
                 <RadioGroup row {...field}>
@@ -324,7 +335,7 @@ export default function Home() {
                 </RadioGroup>
               )} />
               <p className="txt-red">{errors.metadataUpdate?.message}</p>
-            </GridItem>
+            </GridItem> */}
 
             <GridItem lg={8} md={12}>
               <label className='label'>¿Involucra integración con otros sistemas?</label>
