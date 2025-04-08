@@ -31,7 +31,7 @@ FROM base AS deps
 # into this layer.
 COPY package.json pnpm-lock.yaml ./
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile --reporter=verbose
 
 ################################################################################
 # Create a stage for building the application.
