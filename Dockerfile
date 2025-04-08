@@ -4,8 +4,8 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/go/dockerfile-reference/
 
-ARG NODE_VERSION=20.11.0
-ARG PNPM_VERSION=8.14.1
+ARG NODE_VERSION=lts
+ARG PNPM_VERSION=10.7.1
 ARG PORT
 
 ################################################################################
@@ -21,8 +21,7 @@ WORKDIR /usr/src/app
 # Install corepack and set pnpm as default package manager
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-
-RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+RUN corepack enable
 
 ################################################################################
 # Create a stage for installing production dependecies.
@@ -34,7 +33,7 @@ FROM base AS deps
 # into this layer.
 COPY package.json pnpm-lock.yaml ./
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --reporter=verbose
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
 ################################################################################
 # Create a stage for building the application.
@@ -42,7 +41,7 @@ FROM deps AS build
 
 # Download additional development dependencies before building, as some projects require
 # "devDependencies" to be installed to build. If you don't need this, remove this step.
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --reporter=verbose
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Copy the rest of the source files into the image.
 COPY . .
