@@ -60,7 +60,7 @@ const schema: yup.ObjectSchema<FormValues> = yup.object({
   objective: yup.string().required('Objetivo requerido'),
 
   developmentType: yup.mixed<'Nuevo desarrollo' | 'Modificación'>().oneOf(['Nuevo desarrollo', 'Modificación']).required('Tipo requerido'),
-  includesDataLoad: yup.boolean().required(),
+  includesDataLoad: yup.boolean().required('Campo requerido'),
   dataType: yup.array().of(
     yup.object().shape({
       value: yup.string().required('Valor requerido'),
