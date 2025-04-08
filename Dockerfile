@@ -15,11 +15,14 @@ FROM node:${NODE_VERSION}-alpine AS base
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
 
+# Configuración de PNPM
+
 # Install pnpm.
 # Install corepack and set pnpm as default package manager
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 ################################################################################
 # Create a stage for installing production dependecies.
@@ -31,7 +34,7 @@ FROM base AS deps
 # into this layer.
 COPY package.json pnpm-lock.yaml ./
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile --reporter=verbose
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --reporter=verbose
 
 ################################################################################
 # Create a stage for building the application.
@@ -39,7 +42,7 @@ FROM deps AS build
 
 # Download additional development dependencies before building, as some projects require
 # "devDependencies" to be installed to build. If you don't need this, remove this step.
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --reporter=verbose
 
 # Copy the rest of the source files into the image.
 COPY . .
