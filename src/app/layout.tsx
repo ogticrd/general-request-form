@@ -6,6 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/theme";
 import { Header } from "@/components/common/Header";
 import { Footer } from "@/components/common/Footer";
+import { SnackbarProvider } from 'notistack';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,9 +32,15 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeProvider>
-          <Header />
-          {children}
-          <Footer />
+          <SnackbarProvider
+            maxSnack={3}
+            autoHideDuration={10000}
+            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+          >
+            <Header />
+            {children}
+            <Footer />
+          </SnackbarProvider>
         </ThemeProvider>
       </body>
     </html>
