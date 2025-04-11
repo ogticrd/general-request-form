@@ -596,6 +596,41 @@ export default function Home() {
           </Button>
         </form>
       </div>
-    </Container >
+      <br />
+      <Typography variant="h5" fontWeight="bold" color='primary' gutterBottom>
+        SLA Datos Abiertos
+      </Typography>
+      <Divider />
+      <Typography variant="h6" fontWeight="bold" color='info'>
+        Nivel 1
+      </Typography>
+      <Typography variant="body1">
+        Hasta 8 horas laborables. Cambios básicos relacionados con texto o imágenes del portal, además de incidencias críticas que afectan el funcionamiento, por ejemplo, caída del portal, errores en secciones del portal, etc.
+      </Typography>
+      <br />
+      <Divider />
+      <Typography variant="h6" fontWeight="bold" color='info'>
+        Nivel 2
+      </Typography>
+      <Typography variant="body1">
+        Hasta 24 horas laborables. Requerimientos importantes pero no críticos o cambios de con dificultad baja-media, por ejemplo, revisión de funcionamiento de algún módulo de la plataforma.
+      </Typography>
+      <br />
+      <Divider />
+      <Typography variant="h6" fontWeight="bold" color='info'>
+        Nivel 3
+      </Typography>
+      <Typography variant="body1">
+        Hasta 10 días laborables. Requerimientos planificados o de desarrollo, como nuevas funcionalidades, rediseño de secciones, etc.
+      </Typography>
+      <br />
+      <Divider />
+      <Typography variant="h6" fontWeight="bold" color='info'>
+        Nivel 4
+      </Typography>
+      <Typography variant="body1">
+        Tiempo de ejecución a definir. Requerimientos complejos, estratégicos o no priorizados, cuya solución requiere discusión, levantamiento de información, análisis técnico o decisiones interinstitucionales. Se establecerá cronograma de trabajo específico.
+      </Typography>
+    </Container>
   );
 }
