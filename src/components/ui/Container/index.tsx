@@ -19,8 +19,8 @@ export const Container = ({
     // sx={sx}
     maxWidth={maxWidth}
     style={{
-      paddingTop: paddingY ? "128px" : "",
-      paddingBottom: paddingY ? "128px" : "",
+      paddingTop: paddingY ? "64px" : "",
+      paddingBottom: paddingY ? "64px" : "",
     }}
   >
     {children}
