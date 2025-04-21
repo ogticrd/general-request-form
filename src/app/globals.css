@@ -1,4 +1,4 @@
-.txt-red {
+.error-text {
   color: #EE2A24;
   font-size: 12px;
   margin: 0;
@@ -12,6 +12,14 @@
   font-weight: bold;
   color: #003876;
   margin-bottom: 8px;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.not-full-width {
+  width: fit-content;
 }
 
 .label2 {

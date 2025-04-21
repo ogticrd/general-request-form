@@ -4,7 +4,7 @@ export const Header = () => {
 
   return (
     <header style={{ background: "white" }}>
-      <Container paddingY={false} maxWidth='lg'>
+      <Container paddingY={false}>
         <div style={{
           marginLeft: "auto",
           marginRight: "auto",

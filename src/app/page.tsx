@@ -2,160 +2,30 @@
 
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { RadioGroup, FormControlLabel, Radio, Typography, Button, Stack, Divider } from '@mui/material';
+import { RadioGroup, FormControlLabel, Radio, Typography, Button, Divider } from '@mui/material';
 import { Container } from '@/components/ui/Container';
-import * as yup from 'yup';
 import Select from 'react-select';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SpanColor } from '@/components/ui/SpanColor';
 import { GridContainer, GridItem } from '@/components/ui/Grid';
 import { dataFrequencyOptions, dataTypeOptions } from '@/data';
 import { useSnackbar } from 'notistack';
-
-interface FormValues {
-  requesterName: string;
-  department: string;
-  requestDate: string;
-  phone: string;
-  email: string;
-  requestChannel: 'Correo' | 'Whatsapp' | 'Otro';
-
-  requestTitle: string;
-  desiredDeliveryDate: string;
-  description: string;
-  objective: string;
-  requirementJustification: string;
-
-  developmentType: 'Nuevo desarrollo' | 'Modificación';
-  includesDataLoad: boolean;
-  dataType?: any;
-  dataFrequency?: any;
-  systemIntegration: boolean;
-  integratedSystems?: string;
-
-  priority: 'Alta' | 'Media' | 'Baja';
-  priorityJustification: string;
-  affectsPortal: boolean;
-  requiresDowntime: boolean;
-  estimatedDowntime?: string;
-
-  includesAttachments: boolean;
-  // attachments?: any;
-
-  additionalNotes?: string;
-  copyEmails?: string;
-}
-
-const schema: yup.ObjectSchema<FormValues> = yup.object({
-  requesterName: yup.string().required('Nombre requerido'),
-  department: yup.string().required('Departamento requerido'),
-  requestDate: yup.string().required('Fecha requerida'),
-  phone: yup.string().required('Teléfono requerido'),
-  email: yup.string().email('Correo inválido').required('Correo requerido'),
-  requestChannel: yup.mixed<'Correo' | 'Whatsapp' | 'Otro'>().oneOf(['Correo', 'Whatsapp', 'Otro']).required('Canal requerido'),
-
-  requestTitle: yup.string().required('Título requerido'),
-  desiredDeliveryDate: yup.string().required('Fecha deseada requerida'),
-  description: yup.string().required('Descripción requerida'),
-  objective: yup.string().required('Objetivo requerido'),
-  requirementJustification: yup.string().required('Sustento requerido'),
-
-  developmentType: yup.mixed<'Nuevo desarrollo' | 'Modificación'>().oneOf(['Nuevo desarrollo', 'Modificación']).required('Campo requerido'),
-  includesDataLoad: yup.boolean().required('Campo requerido'),
-  dataType: yup.array().of(
-    yup.object().shape({
-      value: yup.string().required('Valor requerido'),
-      label: yup.string().required('Etiqueta requerida'),
-    })
-  ).optional().when('includesDataLoad', {
-    is: true,
-    then: (schema) => schema.min(1, 'Debe seleccionar al menos un tipo de dato').required('Tipo de datos requerido'),
-  }),
-  // dataSource: yup.string().optional().when('includesDataLoad', {
-  //   is: true,
-  //   then: (schema) => schema.required('Fuente requerida'),
-  // }),
-  dataFrequency: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable()
-    .when('includesDataLoad', {
-      is: true,
-      then: (schema) =>
-        schema
-          .required('Periodicidad requerida')
-          .test('has-value-label', 'Periodicidad requerida', (val) => {
-            return !!val?.value && !!val?.label;
-          }),
-      otherwise: (schema) => schema.nullable().notRequired(),
-    }),
-  // metadataUpdate: yup.boolean().required('Campo requerido'),
-  systemIntegration: yup.boolean().required('Campo requerido'),
-  integratedSystems: yup.string().optional().when('systemIntegration', {
-    is: true,
-    then: (schema) => schema.required('Sistemas requeridos'),
-  }),
-
-  priority: yup.mixed<'Alta' | 'Media' | 'Baja'>().oneOf(['Alta', 'Media', 'Baja']).required('Campo requerido'),
-  priorityJustification: yup.string().required('Justificación requerida'),
-  affectsPortal: yup.boolean().required('Campo requerido'),
-  requiresDowntime: yup.boolean().required('Campo requerido'),
-  estimatedDowntime: yup.string().optional().when('requiresDowntime', {
-    is: true,
-    then: (schema) => schema.required('Tiempo estimado requerido'),
-  }),
-
-  includesAttachments: yup.boolean().required('Campo requerido'),
-  // attachments: yup
-  //   .array()
-  //   .of(yup.mixed())
-  //   .nullable()
-  //   .when('includesAttachments', {
-  //     is: true,
-  //     then: (schema) =>
-  //       schema
-  //         .min(1, 'Debe adjuntar al menos un archivo')
-  //         .required('Archivos requeridos'),
-  //     otherwise: (schema) => schema.notRequired(),
-  //   }),
-
-  additionalNotes: yup.string().optional(),
-  copyEmails: yup.string().optional(),
-});
-
+import { SLACard } from '@/components/ui/SLACard';
+import { FormValues } from '@/types/form.types';
+import { formSchema } from '@/schema/form.schema';
+import { formDefaultValues } from '@/constants/form';
+import { Input } from '@/components/ui/Input';
+import { theme } from '@/theme';
 
 export default function Home() {
 
   const { enqueueSnackbar } = useSnackbar();
-
   const [loading, setLoading] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    watch,
-    formState: { errors },
-    reset
-  } = useForm<FormValues>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      requestChannel: 'Correo',
-      developmentType: 'Nuevo desarrollo',
-      includesDataLoad: false,
-      systemIntegration: false,
-      priority: 'Media',
-      affectsPortal: false,
-      requiresDowntime: false,
-      includesAttachments: false,
-    },
+  const { register, handleSubmit, control, setValue, watch, formState: { errors }, reset } = useForm<FormValues>({
+    resolver: yupResolver(formSchema),
+    defaultValues: formDefaultValues as FormValues,
   });
-  console.log(errors)
-  console.log('watch', watch())
 
   const includesDataLoad = Boolean(watch('includesDataLoad'));
   const systemIntegration = Boolean(watch('systemIntegration'));
@@ -187,8 +57,8 @@ export default function Home() {
   // };
 
   const onSubmit = async (data: FormValues) => {
+    setLoading(true)
     try {
-      setLoading(true)
       const jsonBody: Record<string, any> = {
         requesterName: data?.requesterName,
         department: data?.department,
@@ -232,13 +102,13 @@ export default function Home() {
         body: JSON.stringify(jsonBody),
       });
 
-      if (!response.ok) {
-        throw new Error(`Error en la solicitud: ${response.status}`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`Error en la solicitud: ${response.status}`);
+      // }
 
       const result = await response.json();
       console.log('Respuesta del servidor:', result);
-      enqueueSnackbar('Operación exitosa', { variant: 'success' });
+      enqueueSnackbar('El formulario ha sido enviado. Recibirás una copia en tu correo electrónico.', { variant: 'success' });
       reset()
     } catch (error) {
       console.error('Error al enviar el formulario:', error);
@@ -247,8 +117,6 @@ export default function Home() {
       setLoading(false)
     }
   };
-
-
 
   return (
     <Container maxWidth="lg">
@@ -263,29 +131,46 @@ export default function Home() {
           <br />
           <GridContainer>
             <GridItem>
-              <label className='label'>Nombre del solicitante</label>
-              <input {...register('requesterName')} className="input" />
-              <p className="txt-red">{errors.requesterName?.message}</p>
+              <Input
+                required
+                label='Nombre del solicitante'
+                {...register('requesterName')}
+                error={errors.requesterName?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Cargo o departamento</label>
-              <input {...register('department')} className="input" />
-              <p className="txt-red">{errors.department?.message}</p>
+              <Input
+                required
+                label='Cargo o departamento'
+                {...register('department')}
+                error={errors.department?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Fecha de solicitud</label>
-              <input type="date" {...register('requestDate')} className="input" />
-              <p className="txt-red">{errors.requestDate?.message}</p>
+              <Input
+                required
+                label='Fecha de solicitud'
+                type="date"
+                {...register('requestDate')}
+                error={errors.requestDate?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Teléfono o contacto</label>
-              <input {...register('phone')} className="input" />
-              <p className="txt-red">{errors.phone?.message}</p>
+              <Input
+                required
+                label='Teléfono o contacto'
+                {...register('phone')}
+                error={errors.phone?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Correo electrónico</label>
-              <input type="email" {...register('email')} className="input" />
-              <p className="txt-red">{errors.email?.message}</p>
+              <Input
+                required
+                label='Correo electrónico'
+                type="email"
+                {...register('email')}
+                error={errors.email?.message}
+              />
             </GridItem>
             <GridItem>
               <label className='label'>Canal de solicitud</label>
@@ -296,7 +181,7 @@ export default function Home() {
                   <FormControlLabel value="Otro" control={<Radio />} label="Otro" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.requestChannel?.message}</p>
+              <span className="error-text">{errors.requestChannel?.message}</span>
             </GridItem>
           </GridContainer>
 
@@ -308,38 +193,45 @@ export default function Home() {
           <br />
           <GridContainer>
             <GridItem>
-              <label className='label'>Título del requerimiento</label>
-              <input {...register('requestTitle')} className="input" />
-              <p className="txt-red">{errors.requestTitle?.message}</p>
+              <Input
+                required
+                label='Título del requerimiento'
+                {...register('requestTitle')}
+                error={errors.requestTitle?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Fecha deseada para la entrega</label>
-              <input type="date" {...register('desiredDeliveryDate')} className="input" />
-              <p className="txt-red">{errors.desiredDeliveryDate?.message}</p>
-            </GridItem>
-            <GridItem lg={8} md={12}>
-              <label className='label'>Descripción detallada</label>
-              <textarea
-                {...register('description')}
-                className="textarea"
+              <Input
+                required
+                label='Fecha deseada para la entrega'
+                type="date"
+                {...register('desiredDeliveryDate')}
+                error={errors.desiredDeliveryDate?.message}
               />
-              <p className="txt-red">{errors.description?.message}</p>
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Objetivo del cambio o mejora</label>
+              <label className='label'>Descripción detallada <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <textarea
+                className="textarea"
+                {...register('description')}
+              />
+              <span className="error-text">{errors.description?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>Objetivo del cambio o mejora <span style={{ color: theme.palette.error.main }}>*</span></label>
               <textarea
                 {...register('objective')}
                 className="textarea"
               />
-              <p className="txt-red">{errors.objective?.message}</p>
+              <span className="error-text">{errors.objective?.message}</span>
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Sustento del requerimiento</label>
+              <label className='label'>Sustento del requerimiento <span style={{ color: theme.palette.error.main }}>*</span></label>
               <textarea
                 {...register('requirementJustification')}
                 className="textarea"
               />
-              <p className="txt-red">{errors.requirementJustification?.message}</p>
+              <span className="error-text">{errors.requirementJustification?.message}</span>
             </GridItem>
           </GridContainer>
 
@@ -358,7 +250,7 @@ export default function Home() {
                   <FormControlLabel value="Modificación" control={<Radio />} label="Modificación" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.developmentType?.message}</p>
+              <span className="error-text">{errors.developmentType?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
@@ -380,25 +272,25 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.includesDataLoad?.message}</p>
+              <span className="error-text">{errors.includesDataLoad?.message}</span>
               {includesDataLoad && (
                 <div style={{ padding: "15px" }}>
                   <GridContainer>
                     <GridItem lg={6}>
-                      <label className='label2'>Tipo de datos</label>
+                      <label className='label2'>Tipo de datos <span style={{ color: theme.palette.error.main }}>*</span></label>
                       <Select
                         isMulti
                         placeholder="Seleccionar"
                         options={dataTypeOptions}
                         onChange={(e: any) => setValue("dataType", e)}
                       />
-                      <p className="txt-red">{errors.dataType?.message as string}</p>
+                      <span className="error-text">{errors.dataType?.message as string}</span>
                     </GridItem>
 
                     {/* <GridItem>
                       <label className='label2'>Fuente de los datos</label>
                       <input {...register('dataSource')} className="input" />
-                      <p className="txt-red">{errors.dataSource?.message}</p>
+                      <p className="error-text">{errors.dataSource?.message}</p>
                     </GridItem> */}
 
                     <GridItem>
@@ -409,7 +301,7 @@ export default function Home() {
                         options={dataFrequencyOptions}
                         onChange={(e: any) => setValue("dataFrequency", e)}
                       />
-                      <p className="txt-red">{errors.dataFrequency?.message as string}</p>
+                      <span className="error-text">{errors.dataFrequency?.message as string}</span>
                     </GridItem>
                   </GridContainer>
                 </div>
@@ -424,7 +316,7 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.metadataUpdate?.message}</p>
+              <p className="error-text">{errors.metadataUpdate?.message}</p>
             </GridItem> */}
 
             <GridItem lg={8} md={12}>
@@ -439,14 +331,16 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.systemIntegration?.message}</p>
+              <span className="error-text">{errors.systemIntegration?.message}</span>
               {systemIntegration && (
                 <div style={{ padding: "15px" }}>
                   <GridContainer>
                     <GridItem lg={6}>
-                      <label className='label2'>Especificar los sistemas</label>
-                      <input {...register('integratedSystems')} className="input" />
-                      <p className="txt-red">{errors.integratedSystems?.message}</p>
+                      <label className='label2'>Especificar los sistemas <span style={{ color: theme.palette.error.main }}>*</span></label>
+                      <Input
+                        {...register('integratedSystems')}
+                        error={errors.integratedSystems?.message}
+                      />
                     </GridItem>
                   </GridContainer>
                 </div>
@@ -470,16 +364,16 @@ export default function Home() {
                   <FormControlLabel value="Baja" control={<Radio />} label="Baja" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.priority?.message}</p>
+              <span className="error-text">{errors.priority?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
-              <label className='label'>Justificación de la prioridad</label>
+              <label className='label'>Justificación de la prioridad <span style={{ color: theme.palette.error.main }}>*</span></label>
               <textarea
                 {...register('priorityJustification')}
                 className="textarea"
               />
-              <p className="txt-red">{errors.priorityJustification?.message}</p>
+              <span className="error-text">{errors.priorityJustification?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
@@ -494,7 +388,7 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.affectsPortal?.message}</p>
+              <span className="error-text">{errors.affectsPortal?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
@@ -509,14 +403,16 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.requiresDowntime?.message}</p>
+              <span className="error-text">{errors.requiresDowntime?.message}</span>
               {requiresDowntime && (
                 <div style={{ padding: "15px" }}>
                   <GridContainer>
                     <GridItem>
-                      <label className='label2'>Tiempo estimado</label>
-                      <input {...register('estimatedDowntime')} className="input" />
-                      <p className="txt-red">{errors.estimatedDowntime?.message}</p>
+                      <label className='label2'>Tiempo estimado <span style={{ color: theme.palette.error.main }}>*</span></label>
+                      <Input
+                        {...register('estimatedDowntime')}
+                        error={errors.estimatedDowntime?.message}
+                      />
                     </GridItem>
                   </GridContainer>
                 </div>
@@ -543,7 +439,7 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.includesAttachments?.message}</p>
+              <span className="error-text">{errors.includesAttachments?.message}</span>
               {/* {includesAttachments && (
                 <GridContainer>
                   <GridItem lg={12} md={12}>
@@ -570,7 +466,7 @@ export default function Home() {
                         ))}
                       </ul>
                     )}
-                    <p className="txt-red">{errors.attachments?.message as string}</p>
+                    <p className="error-text">{errors.attachments?.message as string}</p>
                   </GridItem>
                 </GridContainer>
               )} */}
@@ -578,7 +474,6 @@ export default function Home() {
           </GridContainer>
 
           <Divider />
-
           <br />
           <GridContainer>
             <GridItem lg={8} md={12}>
@@ -586,8 +481,11 @@ export default function Home() {
               <textarea {...register('additionalNotes')} className="textarea" />
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Correos electrónicos a copiar</label>
-              <input {...register('copyEmails')} className="input mt-2" />
+              <Input
+                label='Correos electrónicos a copiar'
+                {...register('copyEmails')}
+                error={errors.copyEmails?.message}
+              />
             </GridItem>
           </GridContainer>
           <br />
@@ -597,40 +495,7 @@ export default function Home() {
         </form>
       </div>
       <br />
-      <Typography variant="h5" fontWeight="bold" color='primary' gutterBottom>
-        SLA Datos Abiertos
-      </Typography>
-      <Divider />
-      <Typography variant="h6" fontWeight="bold" color='info'>
-        Nivel 1
-      </Typography>
-      <Typography variant="body1">
-        Hasta 8 horas laborables. Cambios básicos relacionados con texto o imágenes del portal, además de incidencias críticas que afectan el funcionamiento, por ejemplo, caída del portal, errores en secciones del portal, etc.
-      </Typography>
-      <br />
-      <Divider />
-      <Typography variant="h6" fontWeight="bold" color='info'>
-        Nivel 2
-      </Typography>
-      <Typography variant="body1">
-        Hasta 24 horas laborables. Requerimientos importantes pero no críticos o cambios de con dificultad baja-media, por ejemplo, revisión de funcionamiento de algún módulo de la plataforma.
-      </Typography>
-      <br />
-      <Divider />
-      <Typography variant="h6" fontWeight="bold" color='info'>
-        Nivel 3
-      </Typography>
-      <Typography variant="body1">
-        Hasta 10 días laborables. Requerimientos planificados o de desarrollo, como nuevas funcionalidades, rediseño de secciones, etc.
-      </Typography>
-      <br />
-      <Divider />
-      <Typography variant="h6" fontWeight="bold" color='info'>
-        Nivel 4
-      </Typography>
-      <Typography variant="body1">
-        Tiempo de ejecución a definir. Requerimientos complejos, estratégicos o no priorizados, cuya solución requiere discusión, levantamiento de información, análisis técnico o decisiones interinstitucionales. Se establecerá cronograma de trabajo específico.
-      </Typography>
+      <SLACard />
     </Container>
   );
 }
