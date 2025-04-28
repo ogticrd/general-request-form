@@ -1,7 +1,6 @@
 export interface FormValues {
   requesterName: string;
   department: string;
-  requestDate: string;
   phone: string;
   email: string;
   requestChannel: 'Correo' | 'Whatsapp' | 'Otro';

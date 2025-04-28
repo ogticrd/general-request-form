@@ -16,6 +16,7 @@ import { formSchema } from '@/schema/form.schema';
 import { formDefaultValues } from '@/constants/form';
 import { Input } from '@/components/ui/Input';
 import { theme } from '@/theme';
+import { getTodayDate } from '@/helpers/date';
 
 export default function Home() {
 
@@ -62,7 +63,7 @@ export default function Home() {
       const jsonBody: Record<string, any> = {
         requesterName: data?.requesterName,
         department: data?.department,
-        requestDate: data?.requestDate,
+        requestDate: getTodayDate(),
         phone: data?.phone,
         email: data?.email,
         requestChannel: data?.requestChannel,
@@ -148,11 +149,10 @@ export default function Home() {
             </GridItem>
             <GridItem>
               <Input
-                required
                 label='Fecha de solicitud'
-                type="date"
-                {...register('requestDate')}
-                error={errors.requestDate?.message}
+                defaultValue={getTodayDate()}
+                type='date'
+                disabled
               />
             </GridItem>
             <GridItem>
