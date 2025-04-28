@@ -49,6 +49,11 @@
   border: 1px solid #00aeef;
   outline: none;
 }
+.input:disabled {
+  background: #f4f4f4;
+  border: 1px solid #ccc;
+  color: #666;
+}
 
 .textarea {
   border: 1px solid #ccc;
