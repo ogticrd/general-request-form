@@ -1,6 +1,6 @@
 import { dataSLA } from '@/data'
 import { theme } from '@/theme'
-import { Typography } from '@mui/material'
+import { Divider, Typography } from '@mui/material'
 import React from 'react'
 import { SpanColor } from '../SpanColor'
 import { GridContainer, GridItem } from '../Grid'
@@ -27,11 +27,15 @@ export const SLACard = () => {
                 border: `1px solid ${theme.palette.info.main}`,
               }}
             >
-              <Typography variant="h6" fontWeight="bold" color='info' gutterBottom>
+              <Typography variant="h6" fontWeight="bold" color='info' textAlign='center' gutterBottom>
                 {item?.title}
               </Typography>
-              <Typography variant="body1" color="primary">
+              <Typography variant="body1" color="primary" textAlign='center' gutterBottom>
                 {item?.description}
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="body1" fontWeight="bold" color="primary" textAlign='center'>
+                Tiempo estimado de atención: <SpanColor>{item?.time}</SpanColor>
               </Typography>
             </div>
           </GridItem>

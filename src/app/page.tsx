@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { RadioGroup, FormControlLabel, Radio, Typography, Button, Divider } from '@mui/material';
+import { RadioGroup, FormControlLabel, Radio, Typography, Button, Divider, Alert } from '@mui/material';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { es } from 'date-fns/locale/es';
 import { Container } from '@/components/ui/Container';
 import Select from 'react-select';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -18,6 +20,8 @@ import { Input } from '@/components/ui/Input';
 import { theme } from '@/theme';
 import { getTodayDate } from '@/helpers/date';
 
+registerLocale('es', es);
+
 export default function Home() {
 
   const { enqueueSnackbar } = useSnackbar();
@@ -27,16 +31,20 @@ export default function Home() {
     resolver: yupResolver(formSchema),
     defaultValues: formDefaultValues as FormValues,
   });
+  console.log(watch())
+  console.log(errors)
 
   const includesDataLoad = Boolean(watch('includesDataLoad'));
   const systemIntegration = Boolean(watch('systemIntegration'));
   const requiresDowntime = Boolean(watch('requiresDowntime'));
+  const deliveryDate = watch('desiredDeliveryDate');
   // const includesAttachments = Boolean(watch('includesAttachments'));
   // const attachments = watch('attachments') || [];
+  // const requirementJustification = watch('requirementJustification') || [];
 
   // const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const newFiles = Array.from(e.target.files || []);
-  //   const existingFiles = watch('attachments') || [];
+  //   const existingFiles = watch('requirementJustification') || [];
 
   //   const combined = [
   //     ...existingFiles,
@@ -48,13 +56,13 @@ export default function Home() {
   //     ),
   //   ];
 
-  //   setValue('attachments', combined);
+  //   setValue('requirementJustification', combined);
   //   e.target.value = '';
   // };
 
   // const handleRemoveFile = (indexToRemove: number) => {
-  //   const updated = attachments.filter((_: File, i: number) => i !== indexToRemove);
-  //   setValue('attachments', updated);
+  //   const updated = requirementJustification.filter((_: File, i: number) => i !== indexToRemove);
+  //   setValue('requirementJustification', updated);
   // };
 
   const onSubmit = async (data: FormValues) => {
@@ -66,13 +74,20 @@ export default function Home() {
         requestDate: getTodayDate(),
         phone: data?.phone,
         email: data?.email,
+        institution: data?.institution,
         requestChannel: data?.requestChannel,
 
         requestTitle: data?.requestTitle,
-        desiredDeliveryDate: data?.desiredDeliveryDate,
+        desiredDeliveryDate: data?.desiredDeliveryDate
+          ? data?.desiredDeliveryDate?.toISOString().split('T')[0]
+          : null,
+        requestType: data?.requestType,
+        integrationSystem: data?.integrationSystem,
+        involveNewData: data?.involveNewData,
         description: data?.description,
         objective: data?.objective,
-        requirementJustification: data?.requirementJustification,
+        //cambiar a binary []
+        // requirementJustification: data?.requirementJustification,
 
         developmentType: data?.developmentType,
         includesDataLoad: data?.includesDataLoad,
@@ -113,11 +128,13 @@ export default function Home() {
       reset()
     } catch (error) {
       console.error('Error al enviar el formulario:', error);
-      enqueueSnackbar('Ocurrió un error', { variant: 'error' });
+      enqueueSnackbar('Error al enviar el formulario', { variant: 'error' });
     } finally {
       setLoading(false)
     }
   };
+
+  const today = new Date().toLocaleDateString('es-ES');
 
   return (
     <Container maxWidth="lg">
@@ -142,6 +159,14 @@ export default function Home() {
             <GridItem>
               <Input
                 required
+                label='Institución o dependencia'
+                {...register('institution')}
+                error={errors.institution?.message}
+              />
+            </GridItem>
+            <GridItem>
+              <Input
+                required
                 label='Cargo o departamento'
                 {...register('department')}
                 error={errors.department?.message}
@@ -150,9 +175,18 @@ export default function Home() {
             <GridItem>
               <Input
                 label='Fecha de solicitud'
-                defaultValue={getTodayDate()}
-                type='date'
+                type="text"
+                value={today}
                 disabled
+              />
+            </GridItem>
+            <GridItem>
+              <Input
+                required
+                label='Correo electrónico institucional'
+                type="email"
+                {...register('email')}
+                error={errors.email?.message}
               />
             </GridItem>
             <GridItem>
@@ -164,21 +198,10 @@ export default function Home() {
               />
             </GridItem>
             <GridItem>
-              <Input
-                required
-                label='Correo electrónico'
-                type="email"
-                {...register('email')}
-                error={errors.email?.message}
-              />
-            </GridItem>
-            <GridItem>
               <label className='label'>Canal de solicitud</label>
               <Controller control={control} name="requestChannel" render={({ field }) => (
                 <RadioGroup row {...field}>
                   <FormControlLabel value="Correo" control={<Radio />} label="Correo" />
-                  <FormControlLabel value="Whatsapp" control={<Radio />} label="Whatsapp" />
-                  <FormControlLabel value="Otro" control={<Radio />} label="Otro" />
                 </RadioGroup>
               )} />
               <span className="error-text">{errors.requestChannel?.message}</span>
@@ -201,16 +224,57 @@ export default function Home() {
               />
             </GridItem>
             <GridItem>
-              <Input
+              {/* <Input
                 required
-                label='Fecha deseada para la entrega'
+                label='Fecha deseada de la entrega'
                 type="date"
                 {...register('desiredDeliveryDate')}
                 error={errors.desiredDeliveryDate?.message}
+              /> */}
+              <label className='label'>Fecha deseada de la entrega <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <DatePicker
+                selected={deliveryDate ? new Date(deliveryDate) : null}
+                onChange={(date) => setValue('desiredDeliveryDate', date)}
+                className="input"
+                dateFormat="dd/MM/yyyy"
+                locale="es"
+                placeholderText="dd/mm/yyyy"
               />
+              <span className="error-text">{errors.desiredDeliveryDate?.message}</span>
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Descripción detallada <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <label className='label'>Tipo de solicitud</label>
+              <Controller control={control} name="requestType" render={({ field }) => (
+                <RadioGroup row {...field}>
+                  <FormControlLabel value="Nuevo desarrollo" control={<Radio />} label="Nuevo desarrollo" />
+                  <FormControlLabel value="Cambio / Mejora / Modificación de funcionalidad existente" control={<Radio />} label="Cambio / Mejora / Modificación de funcionalidad existente" />
+                  <FormControlLabel value="Corrección de errores" control={<Radio />} label="Corrección de errores" />
+                </RadioGroup>
+              )} />
+              <span className="error-text">{errors.requestType?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>¿Integración con otro sistema?</label>
+              <Controller control={control} name="integrationSystem" render={({ field }) => (
+                <RadioGroup row {...field}>
+                  <FormControlLabel value={'true'} control={<Radio />} label="Sí" />
+                  <FormControlLabel value={'false'} control={<Radio />} label="No" />
+                </RadioGroup>
+              )} />
+              <span className="error-text">{errors.integrationSystem?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>¿Involucra la carga de nuevos datos?</label>
+              <Controller control={control} name="involveNewData" render={({ field }) => (
+                <RadioGroup row {...field}>
+                  <FormControlLabel value={'true'} control={<Radio />} label="Sí" />
+                  <FormControlLabel value={'false'} control={<Radio />} label="No" />
+                </RadioGroup>
+              )} />
+              <span className="error-text">{errors.involveNewData?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>Descripción detallada del requerimiento<span style={{ color: theme.palette.error.main }}>*</span></label>
               <textarea
                 className="textarea"
                 {...register('description')}
@@ -218,21 +282,45 @@ export default function Home() {
               <span className="error-text">{errors.description?.message}</span>
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Objetivo del cambio o mejora <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <label className='label'>Objetivo o finalidad del requerimiento <span style={{ color: theme.palette.error.main }}>*</span></label>
               <textarea
                 {...register('objective')}
                 className="textarea"
               />
               <span className="error-text">{errors.objective?.message}</span>
             </GridItem>
-            <GridItem lg={8} md={12}>
-              <label className='label'>Sustento del requerimiento <span style={{ color: theme.palette.error.main }}>*</span></label>
-              <textarea
+            {/* <GridItem lg={8} md={12}>
+              <label className='label'>Sustento normativo, documental, legal u oficial <span style={{ color: theme.palette.error.main }}>*</span></label> */}
+            {/* <textarea
                 {...register('requirementJustification')}
                 className="textarea"
               />
-              <span className="error-text">{errors.requirementJustification?.message}</span>
-            </GridItem>
+              <span className="error-text">{errors.requirementJustification?.message}</span> */}
+
+            {/* <input
+                type="file"
+                multiple
+                onChange={handleFilesChange}
+              />
+              {requirementJustification.length > 0 && (
+                <ul>
+                  {requirementJustification.map((file: File, index: number) => (
+                    <li key={index}>
+                      {file.name}{' '}
+                      <Button
+                        onClick={() => handleRemoveFile(index)}
+                        size='small'
+                        color='error'
+                        variant='contained'
+                      >
+                        Eliminar
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="error-text">{errors.requirementJustification?.message as string}</p>
+            </GridItem>*/}
           </GridContainer>
 
           <Divider />
@@ -352,7 +440,7 @@ export default function Home() {
 
           {/* Impacto */}
           <br />
-          <Typography variant="h6" color="info" gutterBottom>4. Impacto del Cambio</Typography>
+          <Typography variant="h6" color="info" gutterBottom>4. Impacto de este Requerimiento</Typography>
           <br />
           <GridContainer>
             <GridItem lg={8} md={12}>
@@ -482,7 +570,7 @@ export default function Home() {
             </GridItem>
             <GridItem lg={8} md={12}>
               <Input
-                label='Correos electrónicos a copiar'
+                label='Correos electrónicos para incluir en copia'
                 {...register('copyEmails')}
                 error={errors.copyEmails?.message}
               />
@@ -493,6 +581,9 @@ export default function Home() {
             Enviar
           </Button>
         </form>
+        <Alert severity="info" sx={{ mt: 4, fontWeight: "bold" }}>
+          Este formulario generará un ticket automáticamente al ser enviado.
+        </Alert>
       </div>
       <br />
       <SLACard />

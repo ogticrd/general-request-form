@@ -17,18 +17,22 @@ export const dataFrequencyOptions = [
 export const dataSLA = [
   {
     title: "Nivel 1",
-    description: "Hasta 8 horas laborables. Cambios básicos relacionados con texto o imágenes del portal, además de incidencias críticas que afectan el funcionamiento, por ejemplo, caída del portal, errores en secciones del portal, etc."
+    time: "Hasta 8 horas laborables",
+    description: "Cambios básicos relacionados con texto o imágenes del portal, además de incidencias críticas que afectan el funcionamiento, por ejemplo, caída del portal, errores en secciones del portal, etc."
   },
   {
     title: "Nivel 2",
-    description: "Hasta 24 horas laborables. Requerimientos importantes pero no críticos o cambios de con dificultad baja-media, por ejemplo, revisión de funcionamiento de algún módulo de la plataforma."
+    time: "Hasta 24 horas laborables",
+    description: "Requerimientos importantes pero no críticos o cambios de con dificultad baja-media, por ejemplo, revisión de funcionamiento de algún módulo de la plataforma."
   },
   {
     title: "Nivel 3",
-    description: "Hasta 10 días laborables. Requerimientos planificados o de desarrollo, como nuevas funcionalidades, rediseño de secciones, etc."
+    time: "Hasta 10 días hábiles",
+    description: "Requerimientos planificados o de desarrollo, como nuevas funcionalidades, rediseño de secciones, etc."
   },
   {
     title: "Nivel 4",
-    description: "Tiempo de ejecución a definir. Requerimientos complejos, estratégicos o no priorizados, cuya solución requiere discusión, levantamiento de información, análisis técnico o decisiones interinstitucionales. Se establecerá cronograma de trabajo específico."
+    time: "A definir",
+    description: "Requerimientos complejos, estratégicos o no priorizados, cuya solución requiere discusión, levantamiento de información, análisis técnico o decisiones interinstitucionales. Se establecerá cronograma de trabajo específico."
   },
 ]

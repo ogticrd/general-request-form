@@ -3,13 +3,18 @@ export interface FormValues {
   department: string;
   phone: string;
   email: string;
-  requestChannel: 'Correo' | 'Whatsapp' | 'Otro';
+  institution: string;
+  requestChannel: 'Correo';
 
   requestTitle: string;
-  desiredDeliveryDate: string;
+  desiredDeliveryDate: Date | null;
+  requestType: 'Nuevo desarrollo' | 'Cambio / Mejora / Modificación de funcionalidad existente' | 'Corrección de errores';
+  integrationSystem: boolean;
+  involveNewData: boolean;
   description: string;
   objective: string;
-  requirementJustification: string;
+  // requirementJustification: string;
+  // requirementJustification: any[];
 
   developmentType: 'Nuevo desarrollo' | 'Modificación';
   includesDataLoad: boolean;

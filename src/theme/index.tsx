@@ -81,6 +81,13 @@ export const theme = createTheme({
         },
       },
     },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          alignItems: "center",
+        }
+      }
+    },
     MuiAccordion: {
       defaultProps: {
         sx: {

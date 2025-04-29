@@ -4,17 +4,28 @@ import { FormValues } from '@/types/form.types';
 export const formSchema: yup.ObjectSchema<FormValues> = yup.object({
   requesterName: yup.string().required('Nombre requerido'),
   department: yup.string().required('Departamento requerido'),
-  requestDate: yup.string().required('Fecha requerida'),
+  // requestDate: yup.string().required('Fecha requerida'),
   phone: yup.string().required('Teléfono requerido'),
   email: yup.string().email('Correo inválido').required('Correo requerido'),
-  requestChannel: yup.mixed<'Correo' | 'Whatsapp' | 'Otro'>().oneOf(['Correo', 'Whatsapp', 'Otro']).required('Canal requerido'),
+  institution: yup.string().required('Institución o dependencia requerido'),
+  requestChannel: yup.mixed<'Correo'>().oneOf(['Correo']).required('Canal requerido'),
 
   requestTitle: yup.string().required('Título requerido'),
-  desiredDeliveryDate: yup.string().required('Fecha deseada requerida'),
+  desiredDeliveryDate: yup
+    .date()
+    .typeError('Fecha no válida')
+    .required('Fecha deseada requerida'),
+  requestType: yup.mixed<'Nuevo desarrollo' | 'Cambio / Mejora / Modificación de funcionalidad existente' | 'Corrección de errores'>().oneOf(['Nuevo desarrollo', 'Cambio / Mejora / Modificación de funcionalidad existente', 'Corrección de errores']).required('Campo requerido'),
+  integrationSystem: yup.boolean().required('Campo requerido'),
+  involveNewData: yup.boolean().required('Campo requerido'),
   description: yup.string().required('Descripción requerida'),
   objective: yup.string().required('Objetivo requerido'),
-  requirementJustification: yup.string().required('Sustento requerido'),
-
+  // requirementJustification: yup.string().required('Sustento requerido'),
+  // requirementJustification: yup
+  //   .array()
+  //   .of(yup.mixed())
+  //   .min(1, 'Debes adjuntar al menos un archivo')
+  //   .required('Archivos requeridos'),
   developmentType: yup.mixed<'Nuevo desarrollo' | 'Modificación'>().oneOf(['Nuevo desarrollo', 'Modificación']).required('Campo requerido'),
   includesDataLoad: yup.boolean().required('Campo requerido'),
   dataType: yup.array().of(
