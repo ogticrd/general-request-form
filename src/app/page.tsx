@@ -299,7 +299,7 @@ export default function Home() {
                 {...register('requirementJustification')}
                 className="textarea"
                 rows={3}
-                placeholder='Incluir la normativa, resolución, disposición legal o documento oficial que respalda esta solicitud, ya sea de su institución o del Estado Dominicano.'
+                placeholder='Incluir la normativa, resolución, disposición legal, o documento oficial que respalde la solicitud, ya sea de su institución o de algun organismo parte del Estado Dominicano.'
               />
               {/* <input
                 type="file"
@@ -542,6 +542,7 @@ export default function Home() {
                         {...register('attachments')}
                         className="textarea"
                         rows={3}
+                        placeholder='Indique los enlaces de los documentos adjuntos, por ejemplo: https://miportal.gob.do/docs/informe-tecnico.pdf'
                       />
                       <span className="error-text">{errors.attachments?.message}</span>
                     </GridItem>
