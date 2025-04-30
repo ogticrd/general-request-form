@@ -17,12 +17,12 @@ export const dataFrequencyOptions = [
 export const dataSLA = [
   {
     title: "Nivel 1",
-    time: "Hasta 8 horas laborables",
+    time: "Hasta 8 horas hábiles",
     description: "Cambios básicos relacionados con texto o imágenes del portal, además de incidencias críticas que afectan el funcionamiento, por ejemplo, caída del portal, errores en secciones del portal, etc."
   },
   {
     title: "Nivel 2",
-    time: "Hasta 24 horas laborables",
+    time: "Hasta 24 horas hábiles",
     description: "Requerimientos importantes pero no críticos o cambios de con dificultad baja-media, por ejemplo, revisión de funcionamiento de algún módulo de la plataforma."
   },
   {

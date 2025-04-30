@@ -13,15 +13,15 @@ export interface FormValues {
   involveNewData: boolean;
   description: string;
   objective: string;
-  // requirementJustification: string;
+  requirementJustification: string;
   // requirementJustification: any[];
 
-  developmentType: 'Nuevo desarrollo' | 'Modificación';
-  includesDataLoad: boolean;
-  dataType?: any;
-  dataFrequency?: any;
-  systemIntegration: boolean;
-  integratedSystems?: string;
+  // developmentType: 'Nuevo desarrollo' | 'Modificación';
+  // includesDataLoad: boolean;
+  // dataType?: any;
+  // dataFrequency?: any;
+  // systemIntegration: boolean;
+  // integratedSystems?: string;
 
   priority: 'Alta' | 'Media' | 'Baja';
   priorityJustification: string;
@@ -30,6 +30,7 @@ export interface FormValues {
   estimatedDowntime?: string;
 
   includesAttachments: boolean;
+  attachments?: string;
   // attachments?: any;
 
   additionalNotes?: string;

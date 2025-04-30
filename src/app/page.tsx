@@ -6,11 +6,9 @@ import { RadioGroup, FormControlLabel, Radio, Typography, Button, Divider, Alert
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale/es';
 import { Container } from '@/components/ui/Container';
-import Select from 'react-select';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SpanColor } from '@/components/ui/SpanColor';
 import { GridContainer, GridItem } from '@/components/ui/Grid';
-import { dataFrequencyOptions, dataTypeOptions } from '@/data';
 import { useSnackbar } from 'notistack';
 import { SLACard } from '@/components/ui/SLACard';
 import { FormValues } from '@/types/form.types';
@@ -34,11 +32,11 @@ export default function Home() {
   console.log(watch())
   console.log(errors)
 
-  const includesDataLoad = Boolean(watch('includesDataLoad'));
-  const systemIntegration = Boolean(watch('systemIntegration'));
+  // const includesDataLoad = Boolean(watch('includesDataLoad'));
+  // const systemIntegration = Boolean(watch('systemIntegration'));
   const requiresDowntime = Boolean(watch('requiresDowntime'));
   const deliveryDate = watch('desiredDeliveryDate');
-  // const includesAttachments = Boolean(watch('includesAttachments'));
+  const includesAttachments = Boolean(watch('includesAttachments'));
   // const attachments = watch('attachments') || [];
   // const requirementJustification = watch('requirementJustification') || [];
 
@@ -86,18 +84,17 @@ export default function Home() {
         involveNewData: data?.involveNewData,
         description: data?.description,
         objective: data?.objective,
-        //cambiar a binary []
-        // requirementJustification: data?.requirementJustification,
+        requirementJustification: data?.requirementJustification,
 
-        developmentType: data?.developmentType,
-        includesDataLoad: data?.includesDataLoad,
-        dataType: Array.isArray(data?.dataType)
-          ? data?.dataType.map((item: any) => item.value)
-          : undefined,
-        dataFrequency: data?.dataFrequency?.value,
+        // developmentType: data?.developmentType,
+        // includesDataLoad: data?.includesDataLoad,
+        // dataType: Array.isArray(data?.dataType)
+        // ? data?.dataType.map((item: any) => item.value)
+        // : undefined,
+        // dataFrequency: data?.dataFrequency?.value,
 
-        systemIntegration: data?.systemIntegration,
-        integratedSystems: data?.integratedSystems,
+        // systemIntegration: data?.systemIntegration,
+        // integratedSystems: data?.integratedSystems,
 
         priority: data?.priority,
         priorityJustification: data?.priorityJustification,
@@ -106,6 +103,8 @@ export default function Home() {
         estimatedDowntime: data?.estimatedDowntime,
 
         includesAttachments: data?.includesAttachments,
+        attachments: data?.attachments,
+
         additionalNotes: data?.additionalNotes,
         copyEmails: data?.copyEmails,
       };
@@ -215,12 +214,13 @@ export default function Home() {
           <Typography variant="h6" color="info" gutterBottom>2. Descripción del Requerimiento</Typography>
           <br />
           <GridContainer>
-            <GridItem>
+            <GridItem lg={8} md={12}>
               <Input
                 required
                 label='Título del requerimiento'
                 {...register('requestTitle')}
                 error={errors.requestTitle?.message}
+                placeholder='Breve y claro, que identifique el propósito principal del requerimiento.'
               />
             </GridItem>
             <GridItem>
@@ -278,6 +278,8 @@ export default function Home() {
               <textarea
                 className="textarea"
                 {...register('description')}
+                rows={3}
+                placeholder='Explique con precisión qué se solicita, el tipo de solicitud, cómo debe funcionar, a quién impacta y, si aplica, detalles técnicos relevantes.'
               />
               <span className="error-text">{errors.description?.message}</span>
             </GridItem>
@@ -286,18 +288,20 @@ export default function Home() {
               <textarea
                 {...register('objective')}
                 className="textarea"
+                rows={3}
+                placeholder='¿Cuál es el problema que se busca resolver o la necesidad que se atiende con este requerimiento? ¿Qué se espera lograr?'
               />
               <span className="error-text">{errors.objective?.message}</span>
             </GridItem>
-            {/* <GridItem lg={8} md={12}>
-              <label className='label'>Sustento normativo, documental, legal u oficial <span style={{ color: theme.palette.error.main }}>*</span></label> */}
-            {/* <textarea
+            <GridItem lg={8} md={12}>
+              <label className='label'>Sustento normativo, documental, legal u oficial <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <textarea
                 {...register('requirementJustification')}
                 className="textarea"
+                rows={3}
+                placeholder='Incluir la normativa, resolución, disposición legal o documento oficial que respalda esta solicitud, ya sea de su institución o del Estado Dominicano.'
               />
-              <span className="error-text">{errors.requirementJustification?.message}</span> */}
-
-            {/* <input
+              {/* <input
                 type="file"
                 multiple
                 onChange={handleFilesChange}
@@ -318,15 +322,15 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-              )}
+              )}*/}
               <p className="error-text">{errors.requirementJustification?.message as string}</p>
-            </GridItem>*/}
+            </GridItem>
           </GridContainer>
 
           <Divider />
 
           {/* Alcance */}
-          <br />
+          {/* <br />
           <Typography variant="h6" color="info" gutterBottom>3. Alcance del Requerimiento</Typography>
           <br />
           <GridContainer>
@@ -373,15 +377,15 @@ export default function Home() {
                         onChange={(e: any) => setValue("dataType", e)}
                       />
                       <span className="error-text">{errors.dataType?.message as string}</span>
-                    </GridItem>
+                    </GridItem> */}
 
-                    {/* <GridItem>
+          {/* <GridItem>
                       <label className='label2'>Fuente de los datos</label>
                       <input {...register('dataSource')} className="input" />
                       <p className="error-text">{errors.dataSource?.message}</p>
                     </GridItem> */}
 
-                    <GridItem>
+          {/* <GridItem>
                       <label className='label2'>Periodicidad de la carga</label>
                       <Select
                         placeholder="Seleccionar"
@@ -394,9 +398,9 @@ export default function Home() {
                   </GridContainer>
                 </div>
               )}
-            </GridItem>
+            </GridItem> */}
 
-            {/* <GridItem lg={8} md={12}>
+          {/* <GridItem lg={8} md={12}>
               <label className='label'>¿Requiere actualización de metadatos?</label>
               <Controller control={control} name="metadataUpdate" render={({ field }) => (
                 <RadioGroup row {...field}>
@@ -407,7 +411,7 @@ export default function Home() {
               <p className="error-text">{errors.metadataUpdate?.message}</p>
             </GridItem> */}
 
-            <GridItem lg={8} md={12}>
+          {/* <GridItem lg={8} md={12}>
               <label className='label'>¿Involucra integración con otros sistemas?</label>
               <Controller control={control} name="systemIntegration" render={({ field }) => (
                 <RadioGroup
@@ -436,11 +440,11 @@ export default function Home() {
             </GridItem>
           </GridContainer>
 
-          <Divider />
+          <Divider /> */}
 
           {/* Impacto */}
           <br />
-          <Typography variant="h6" color="info" gutterBottom>4. Impacto de este Requerimiento</Typography>
+          <Typography variant="h6" color="info" gutterBottom>3. Impacto de este Requerimiento</Typography>
           <br />
           <GridContainer>
             <GridItem lg={8} md={12}>
@@ -460,6 +464,7 @@ export default function Home() {
               <textarea
                 {...register('priorityJustification')}
                 className="textarea"
+                rows={3}
               />
               <span className="error-text">{errors.priorityJustification?.message}</span>
             </GridItem>
@@ -512,7 +517,7 @@ export default function Home() {
 
           {/* Adjuntos */}
           <br />
-          <Typography variant="h6" color="info" gutterBottom>5. Documentación Adjunta</Typography>
+          <Typography variant="h6" color="info" gutterBottom>4. Documentación Adjunta</Typography>
           <br />
           <GridContainer>
             <GridItem lg={12} md={12}>
@@ -528,6 +533,21 @@ export default function Home() {
                 </RadioGroup>
               )} />
               <span className="error-text">{errors.includesAttachments?.message}</span>
+              {includesAttachments &&
+                <div style={{ padding: "15px" }}>
+                  <GridContainer>
+                    <GridItem lg={8} md={12}>
+                      <label className='label2'>Incluir adjuntos <span style={{ color: theme.palette.error.main }}>*</span></label>
+                      <textarea
+                        {...register('attachments')}
+                        className="textarea"
+                        rows={3}
+                      />
+                      <span className="error-text">{errors.attachments?.message}</span>
+                    </GridItem>
+                  </GridContainer>
+                </div>
+              }
               {/* {includesAttachments && (
                 <GridContainer>
                   <GridItem lg={12} md={12}>
@@ -566,7 +586,11 @@ export default function Home() {
           <GridContainer>
             <GridItem lg={8} md={12}>
               <label className='label'>Notas adicionales</label>
-              <textarea {...register('additionalNotes')} className="textarea" />
+              <textarea
+                {...register('additionalNotes')}
+                className="textarea"
+                rows={3}
+              />
             </GridItem>
             <GridItem lg={8} md={12}>
               <Input

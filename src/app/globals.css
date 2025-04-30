@@ -7,7 +7,7 @@
 .label {
   font-size: 14px;
   font-weight: 500;
-  line-height: 12px;
+  line-height: 16px;
   display: block;
   font-weight: bold;
   color: #003876;
@@ -25,7 +25,7 @@
 .label2 {
   font-size: 12px;
   font-weight: 500;
-  line-height: 12px;
+  line-height: 16px;
   display: block;
   font-weight: bold;
   color: #666;
@@ -40,7 +40,7 @@
   color: #475569;
   font-weight: 600;
   font-size: 12px;
-  line-height: 14px;
+  line-height: 16px;
   font-family: "Montserrat", sans-serif;
   width: 100%;
   height: 38px;
@@ -54,6 +54,12 @@
   border: 1px solid #ccc;
   color: #666;
 }
+.input::placeholder, .textarea::placeholder {
+  color: #666;
+  font-weight: 500;
+  line-height: 16px;
+  font-style: italic;
+}
 
 .textarea {
   border: 1px solid #ccc;
@@ -63,7 +69,7 @@
   color: #475569;
   font-weight: 600;
   font-size: 12px;
-  line-height: 14px;
+  line-height: 16px;
   font-family: "Montserrat", sans-serif;
   width: 100%;
   margin: 0 !important;
@@ -92,7 +98,7 @@
   color: #475569 !important;
   font-weight: 600;
   font-size: 12px;
-  line-height: 14px;
+  line-height: 16px;
   font-family: "Montserrat", sans-serif;
   width: 100%;
   min-height: 38px;
@@ -106,7 +112,7 @@
   color: #475569 !important;
   font-weight: 600;
   font-size: 12px;
-  line-height: 14px;
+  line-height: 16px;
   font-family: "Montserrat", sans-serif;
   width: 100%;
   height: 38px;

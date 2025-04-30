@@ -20,50 +20,51 @@ export const formSchema: yup.ObjectSchema<FormValues> = yup.object({
   involveNewData: yup.boolean().required('Campo requerido'),
   description: yup.string().required('Descripción requerida'),
   objective: yup.string().required('Objetivo requerido'),
-  // requirementJustification: yup.string().required('Sustento requerido'),
+  requirementJustification: yup.string().required('Sustento requerido'),
   // requirementJustification: yup
   //   .array()
   //   .of(yup.mixed())
   //   .min(1, 'Debes adjuntar al menos un archivo')
   //   .required('Archivos requeridos'),
-  developmentType: yup.mixed<'Nuevo desarrollo' | 'Modificación'>().oneOf(['Nuevo desarrollo', 'Modificación']).required('Campo requerido'),
-  includesDataLoad: yup.boolean().required('Campo requerido'),
-  dataType: yup.array().of(
-    yup.object().shape({
-      value: yup.string().required('Valor requerido'),
-      label: yup.string().required('Etiqueta requerida'),
-    })
-  ).optional().when('includesDataLoad', {
-    is: true,
-    then: (schema) => schema.min(1, 'Debe seleccionar al menos un tipo de dato').required('Tipo de datos requerido'),
-  }),
+
+  // developmentType: yup.mixed<'Nuevo desarrollo' | 'Modificación'>().oneOf(['Nuevo desarrollo', 'Modificación']).required('Campo requerido'),
+  // includesDataLoad: yup.boolean().required('Campo requerido'),
+  // dataType: yup.array().of(
+  //   yup.object().shape({
+  //     value: yup.string().required('Valor requerido'),
+  //     label: yup.string().required('Etiqueta requerida'),
+  //   })
+  // ).optional().when('includesDataLoad', {
+  //   is: true,
+  //   then: (schema) => schema.min(1, 'Debe seleccionar al menos un tipo de dato').required('Tipo de datos requerido'),
+  // }),
   // dataSource: yup.string().optional().when('includesDataLoad', {
   //   is: true,
   //   then: (schema) => schema.required('Fuente requerida'),
   // }),
-  dataFrequency: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable()
-    .when('includesDataLoad', {
-      is: true,
-      then: (schema) =>
-        schema
-          .required('Periodicidad requerida')
-          .test('has-value-label', 'Periodicidad requerida', (val) => {
-            return !!val?.value && !!val?.label;
-          }),
-      otherwise: (schema) => schema.nullable().notRequired(),
-    }),
+  // dataFrequency: yup
+  //   .object()
+  //   .shape({
+  //     value: yup.string(),
+  //     label: yup.string(),
+  //   })
+  //   .nullable()
+  //   .when('includesDataLoad', {
+  //     is: true,
+  //     then: (schema) =>
+  //       schema
+  //         .required('Periodicidad requerida')
+  //         .test('has-value-label', 'Periodicidad requerida', (val) => {
+  //           return !!val?.value && !!val?.label;
+  //         }),
+  //     otherwise: (schema) => schema.nullable().notRequired(),
+  //   }),
   // metadataUpdate: yup.boolean().required('Campo requerido'),
-  systemIntegration: yup.boolean().required('Campo requerido'),
-  integratedSystems: yup.string().optional().when('systemIntegration', {
-    is: true,
-    then: (schema) => schema.required('Sistemas requeridos'),
-  }),
+  // systemIntegration: yup.boolean().required('Campo requerido'),
+  // integratedSystems: yup.string().optional().when('systemIntegration', {
+  //   is: true,
+  //   then: (schema) => schema.required('Sistemas requeridos'),
+  // }),
 
   priority: yup.mixed<'Alta' | 'Media' | 'Baja'>().oneOf(['Alta', 'Media', 'Baja']).required('Campo requerido'),
   priorityJustification: yup.string().required('Justificación requerida'),
@@ -75,6 +76,16 @@ export const formSchema: yup.ObjectSchema<FormValues> = yup.object({
   }),
 
   includesAttachments: yup.boolean().required('Campo requerido'),
+  attachments: yup
+  .string()
+  .optional()
+  .when('includesAttachments', {
+    is: true,
+    then: (schema) =>
+      schema
+        .required('Adjunto requerido'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   // attachments: yup
   //   .array()
   //   .of(yup.mixed())
