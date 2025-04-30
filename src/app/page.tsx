@@ -299,7 +299,7 @@ export default function Home() {
                 {...register('requirementJustification')}
                 className="textarea"
                 rows={3}
-                placeholder='Incluir la normativa, resolución, disposición legal, o documento oficial que respalde la solicitud, ya sea de su institución o de algun organismo parte del Estado Dominicano.'
+                placeholder='Incluir la normativa, resolución, disposición legal, o documento oficial que respalde la solicitud, ya sea de su institución o de algún organismo parte del Estado Dominicano.'
               />
               {/* <input
                 type="file"
@@ -518,7 +518,11 @@ export default function Home() {
           {/* Adjuntos */}
           <br />
           <Typography variant="h6" color="info" gutterBottom>4. Documentación Adjunta</Typography>
-          <br />
+          <Alert severity="info" sx={{ mb: 4 }}>
+            Favor adjuntar en este espacio los documentos necesarios para facilitar la realización del trabajo requerido, ya sea en su fase de diseño, desarrollo o implementación, según corresponda a lo solicitado.
+            <br />
+            Asimismo, detalle si así lo desea en el campo <b>'Notas adicionales'</b> los recursos, materiales o herramientas que considere necesarios para cumplir con lo solicitado.
+          </Alert>
           <GridContainer>
             <GridItem lg={12} md={12}>
               <label className='label'>¿Incluye archivos adjuntos?</label>
@@ -580,11 +584,7 @@ export default function Home() {
                 </GridContainer>
               )} */}
             </GridItem>
-          </GridContainer>
 
-          <Divider />
-          <br />
-          <GridContainer>
             <GridItem lg={8} md={12}>
               <label className='label'>Notas adicionales</label>
               <textarea
