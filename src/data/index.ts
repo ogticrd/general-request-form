@@ -32,7 +32,7 @@ export const dataSLA = [
   },
   {
     title: "Nivel 4",
-    time: "A definir",
-    description: "Requerimientos complejos, estratégicos o no priorizados, cuya solución requiere discusión, levantamiento de información, análisis técnico o decisiones interinstitucionales. Se establecerá cronograma de trabajo específico."
+    time: "Se establecerá cronograma de trabajo específico",
+    description: "Requerimientos complejos, estratégicos o no priorizados, cuya solución requiere discusión, levantamiento de información, análisis técnico o decisiones interinstitucionales."
   },
 ]
