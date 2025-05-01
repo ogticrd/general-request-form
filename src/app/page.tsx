@@ -31,6 +31,7 @@ export default function Home() {
   });
   console.log(watch())
   console.log(errors)
+  console.log(process.env.NEXT_PUBLIC_GENERAL_REQUEST_URL as string)
 
   // const includesDataLoad = Boolean(watch('includesDataLoad'));
   // const systemIntegration = Boolean(watch('systemIntegration'));
@@ -109,7 +110,7 @@ export default function Home() {
         copyEmails: data?.copyEmails,
       };
 
-      const response = await fetch('https://n8n.digital.gob.do/webhook-test/general-request', {
+      const response = await fetch(process.env.NEXT_PUBLIC_GENERAL_REQUEST_URL as string, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -274,7 +275,7 @@ export default function Home() {
               <span className="error-text">{errors.involveNewData?.message}</span>
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Descripción detallada del requerimiento<span style={{ color: theme.palette.error.main }}>*</span></label>
+              <label className='label'>Descripción detallada del requerimiento <span style={{ color: theme.palette.error.main }}>*</span></label>
               <textarea
                 className="textarea"
                 {...register('description')}
