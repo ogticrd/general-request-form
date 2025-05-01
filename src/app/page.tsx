@@ -1,177 +1,139 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { RadioGroup, FormControlLabel, Radio, Typography, Button, Stack } from '@mui/material';
+import { RadioGroup, FormControlLabel, Radio, Typography, Button, Divider, Alert } from '@mui/material';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { es } from 'date-fns/locale/es';
 import { Container } from '@/components/ui/Container';
-import * as yup from 'yup';
-import Select from 'react-select';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SpanColor } from '@/components/ui/SpanColor';
 import { GridContainer, GridItem } from '@/components/ui/Grid';
-import { dataFrequencyOptions, dataTypeOptions } from '@/data';
+import { useSnackbar } from 'notistack';
+import { SLACard } from '@/components/ui/SLACard';
+import { FormValues } from '@/types/form.types';
+import { formSchema } from '@/schema/form.schema';
+import { formDefaultValues } from '@/constants/form';
+import { Input } from '@/components/ui/Input';
+import { theme } from '@/theme';
+import { getTodayDate } from '@/helpers/date';
 
-interface FormValues {
-  requesterName: string;
-  department: string;
-  requestDate: string;
-  phone: string;
-  email: string;
-  requestChannel: 'Correo' | 'Whatsapp' | 'Otro';
-
-  requestTitle: string;
-  desiredDeliveryDate: string;
-  description: string;
-  objective: string;
-
-  developmentType: 'Nuevo desarrollo' | 'Modificación';
-  includesDataLoad: boolean;
-  dataType?: any;
-  dataSource?: string;
-  dataFrequency?: any;
-  metadataUpdate: boolean;
-  systemIntegration: boolean;
-  integratedSystems?: string;
-
-  priority: 'Alta' | 'Media' | 'Baja';
-  priorityJustification: string;
-  affectsPortal: boolean;
-  requiresDowntime: boolean;
-  estimatedDowntime?: string;
-
-  includesAttachments: boolean;
-  attachments?: any;
-
-  additionalNotes?: string;
-  copyEmails?: string;
-}
-
-const schema: yup.ObjectSchema<FormValues> = yup.object({
-  requesterName: yup.string().required('Nombre requerido'),
-  department: yup.string().required('Departamento requerido'),
-  requestDate: yup.string().required('Fecha requerida'),
-  phone: yup.string().required('Teléfono requerido'),
-  email: yup.string().email('Correo inválido').required('Correo requerido'),
-  requestChannel: yup.mixed<'Correo' | 'Whatsapp' | 'Otro'>().oneOf(['Correo', 'Whatsapp', 'Otro']).required('Canal requerido'),
-
-  requestTitle: yup.string().required('Título requerido'),
-  desiredDeliveryDate: yup.string().required('Fecha deseada requerida'),
-  description: yup.string().required('Descripción requerida'),
-  objective: yup.string().required('Objetivo requerido'),
-
-  developmentType: yup.mixed<'Nuevo desarrollo' | 'Modificación'>().oneOf(['Nuevo desarrollo', 'Modificación']).required('Tipo requerido'),
-  includesDataLoad: yup.boolean().required(),
-  dataType: yup.array().of(
-    yup.object().shape({
-      value: yup.string().required('Valor requerido'),
-      label: yup.string().required('Etiqueta requerida'),
-    })
-  ).optional().when('includesDataLoad', {
-    is: true,
-    then: (schema) => schema.min(1, 'Debe seleccionar al menos un tipo de dato').required('Tipo de datos requerido'),
-  }),
-  dataSource: yup.string().optional().when('includesDataLoad', {
-    is: true,
-    then: (schema) => schema.required('Fuente requerida'),
-  }),
-  dataFrequency: yup
-    .object()
-    .shape({
-      value: yup.string(),
-      label: yup.string(),
-    })
-    .nullable()
-    .when('includesDataLoad', {
-      is: true,
-      then: (schema) =>
-        schema
-          .required('Periodicidad requerida')
-          .test('has-value-label', 'Periodicidad requerida', (val) => {
-            return !!val?.value && !!val?.label;
-          }),
-      otherwise: (schema) => schema.nullable().notRequired(),
-    }),
-  metadataUpdate: yup.boolean().required('Campo requerido'),
-  systemIntegration: yup.boolean().required('Campo requerido'),
-  integratedSystems: yup.string().optional().when('systemIntegration', {
-    is: true,
-    then: (schema) => schema.required('Sistemas requeridos'),
-  }),
-
-  priority: yup.mixed<'Alta' | 'Media' | 'Baja'>().oneOf(['Alta', 'Media', 'Baja']).required('Prioridad requerida'),
-  priorityJustification: yup.string().required('Justificación requerida'),
-  affectsPortal: yup.boolean().required('Campo requerido'),
-  requiresDowntime: yup.boolean().required('Campo requerido'),
-  estimatedDowntime: yup.string().optional().when('requiresDowntime', {
-    is: true,
-    then: (schema) => schema.required('Tiempo estimado requerido'),
-  }),
-
-  includesAttachments: yup.boolean().required('Campo requerido'),
-  attachments: yup
-    .array()
-    .of(yup.mixed())
-    .nullable()
-    .when('includesAttachments', {
-      is: true,
-      then: (schema) =>
-        schema
-          .min(1, 'Debe adjuntar al menos un archivo')
-          .required('Archivos requeridos'),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-
-  additionalNotes: yup.string().optional(),
-  copyEmails: yup.string().optional(),
-});
-
+registerLocale('es', es);
 
 export default function Home() {
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: yupResolver(schema),
+
+  const { enqueueSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false)
+
+  const { register, handleSubmit, control, setValue, watch, formState: { errors }, reset } = useForm<FormValues>({
+    resolver: yupResolver(formSchema),
+    defaultValues: formDefaultValues as FormValues,
   });
+  console.log(watch())
   console.log(errors)
-  console.log('watch', watch)
 
-  const includesDataLoad = Boolean(watch('includesDataLoad'));
-  const systemIntegration = Boolean(watch('systemIntegration'));
+  // const includesDataLoad = Boolean(watch('includesDataLoad'));
+  // const systemIntegration = Boolean(watch('systemIntegration'));
   const requiresDowntime = Boolean(watch('requiresDowntime'));
+  const deliveryDate = watch('desiredDeliveryDate');
   const includesAttachments = Boolean(watch('includesAttachments'));
-  const attachments = watch('attachments') || [];
+  // const attachments = watch('attachments') || [];
+  // const requirementJustification = watch('requirementJustification') || [];
 
-  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFiles = Array.from(e.target.files || []);
-    const existingFiles = watch('attachments') || [];
+  // const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const newFiles = Array.from(e.target.files || []);
+  //   const existingFiles = watch('requirementJustification') || [];
 
-    const combined = [
-      ...existingFiles,
-      ...newFiles.filter(
-        (newFile) =>
-          !existingFiles.some(
-            (existingFile: File) => existingFile.name === newFile.name
-          )
-      ),
-    ];
+  //   const combined = [
+  //     ...existingFiles,
+  //     ...newFiles.filter(
+  //       (newFile) =>
+  //         !existingFiles.some(
+  //           (existingFile: File) => existingFile.name === newFile.name
+  //         )
+  //     ),
+  //   ];
 
-    setValue('attachments', combined);
-    e.target.value = '';
+  //   setValue('requirementJustification', combined);
+  //   e.target.value = '';
+  // };
+
+  // const handleRemoveFile = (indexToRemove: number) => {
+  //   const updated = requirementJustification.filter((_: File, i: number) => i !== indexToRemove);
+  //   setValue('requirementJustification', updated);
+  // };
+
+  const onSubmit = async (data: FormValues) => {
+    setLoading(true)
+    try {
+      const jsonBody: Record<string, any> = {
+        requesterName: data?.requesterName,
+        department: data?.department,
+        requestDate: getTodayDate(),
+        phone: data?.phone,
+        email: data?.email,
+        institution: data?.institution,
+        requestChannel: data?.requestChannel,
+
+        requestTitle: data?.requestTitle,
+        desiredDeliveryDate: data?.desiredDeliveryDate
+          ? data?.desiredDeliveryDate?.toISOString().split('T')[0]
+          : null,
+        requestType: data?.requestType,
+        integrationSystem: data?.integrationSystem,
+        involveNewData: data?.involveNewData,
+        description: data?.description,
+        objective: data?.objective,
+        requirementJustification: data?.requirementJustification,
+
+        // developmentType: data?.developmentType,
+        // includesDataLoad: data?.includesDataLoad,
+        // dataType: Array.isArray(data?.dataType)
+        // ? data?.dataType.map((item: any) => item.value)
+        // : undefined,
+        // dataFrequency: data?.dataFrequency?.value,
+
+        // systemIntegration: data?.systemIntegration,
+        // integratedSystems: data?.integratedSystems,
+
+        priority: data?.priority,
+        priorityJustification: data?.priorityJustification,
+        affectsPortal: data?.affectsPortal,
+        requiresDowntime: data?.requiresDowntime,
+        estimatedDowntime: data?.estimatedDowntime,
+
+        includesAttachments: data?.includesAttachments,
+        attachments: data?.attachments,
+
+        additionalNotes: data?.additionalNotes,
+        copyEmails: data?.copyEmails,
+      };
+
+      const response = await fetch('https://n8n.digital.gob.do/webhook-test/general-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jsonBody),
+      });
+
+      // if (!response.ok) {
+      //   throw new Error(`Error en la solicitud: ${response.status}`);
+      // }
+
+      const result = await response.json();
+      console.log('Respuesta del servidor:', result);
+      enqueueSnackbar('El formulario ha sido enviado. Recibirás una copia en tu correo electrónico.', { variant: 'success' });
+      reset()
+    } catch (error) {
+      console.error('Error al enviar el formulario:', error);
+      enqueueSnackbar('Error al enviar el formulario', { variant: 'error' });
+    } finally {
+      setLoading(false)
+    }
   };
 
-  const handleRemoveFile = (indexToRemove: number) => {
-    const updated = attachments.filter((_: File, i: number) => i !== indexToRemove);
-    setValue('attachments', updated);
-  };
-
-  const onSubmit = (data: FormValues) => {
-    console.log('==============>', data);
-  };
+  const today = new Date().toLocaleDateString('es-ES');
 
   return (
     <Container maxWidth="lg">
@@ -186,76 +148,189 @@ export default function Home() {
           <br />
           <GridContainer>
             <GridItem>
-              <label className='label'>Nombre del solicitante</label>
-              <input {...register('requesterName')} className="input" />
-              <p className="txt-red">{errors.requesterName?.message}</p>
+              <Input
+                required
+                label='Nombre del solicitante'
+                {...register('requesterName')}
+                error={errors.requesterName?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Cargo o departamento</label>
-              <input {...register('department')} className="input" />
-              <p className="txt-red">{errors.department?.message}</p>
+              <Input
+                required
+                label='Institución o dependencia'
+                {...register('institution')}
+                error={errors.institution?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Fecha de solicitud</label>
-              <input type="date" {...register('requestDate')} className="input" />
-              <p className="txt-red">{errors.requestDate?.message}</p>
+              <Input
+                required
+                label='Cargo o departamento'
+                {...register('department')}
+                error={errors.department?.message}
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Teléfono o contacto</label>
-              <input {...register('phone')} className="input" />
-              <p className="txt-red">{errors.phone?.message}</p>
+              <Input
+                label='Fecha de solicitud'
+                type="text"
+                value={today}
+                disabled
+              />
             </GridItem>
             <GridItem>
-              <label className='label'>Correo electrónico</label>
-              <input type="email" {...register('email')} className="input" />
-              <p className="txt-red">{errors.email?.message}</p>
+              <Input
+                required
+                label='Correo electrónico institucional'
+                type="email"
+                {...register('email')}
+                error={errors.email?.message}
+              />
+            </GridItem>
+            <GridItem>
+              <Input
+                required
+                label='Teléfono o contacto'
+                {...register('phone')}
+                error={errors.phone?.message}
+              />
             </GridItem>
             <GridItem>
               <label className='label'>Canal de solicitud</label>
               <Controller control={control} name="requestChannel" render={({ field }) => (
                 <RadioGroup row {...field}>
                   <FormControlLabel value="Correo" control={<Radio />} label="Correo" />
-                  <FormControlLabel value="Whatsapp" control={<Radio />} label="Whatsapp" />
-                  <FormControlLabel value="Otro" control={<Radio />} label="Otro" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.requestChannel?.message}</p>
+              <span className="error-text">{errors.requestChannel?.message}</span>
             </GridItem>
           </GridContainer>
+
+          <Divider />
 
           {/* Descripción del Requerimiento */}
           <br />
           <Typography variant="h6" color="info" gutterBottom>2. Descripción del Requerimiento</Typography>
           <br />
           <GridContainer>
-            <GridItem>
-              <label className='label'>Título del requerimiento</label>
-              <input {...register('requestTitle')} className="input" />
-              <p className="txt-red">{errors.requestTitle?.message}</p>
-            </GridItem>
-            <GridItem>
-              <label className='label'>Fecha deseada para la entrega</label>
-              <input type="date" {...register('desiredDeliveryDate')} className="input" />
-              <p className="txt-red">{errors.desiredDeliveryDate?.message}</p>
-            </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Descripción detallada</label>
-              <textarea
-                placeholder="Explicar el problema o la necesidad que se desea abordar"
-                {...register('description')}
-                className="textarea"
+              <Input
+                required
+                label='Título del requerimiento'
+                {...register('requestTitle')}
+                error={errors.requestTitle?.message}
+                placeholder='Breve y claro, que identifique el propósito principal del requerimiento.'
               />
-              <p className="txt-red">{errors.description?.message}</p>
+            </GridItem>
+            <GridItem>
+              {/* <Input
+                required
+                label='Fecha deseada de la entrega'
+                type="date"
+                {...register('desiredDeliveryDate')}
+                error={errors.desiredDeliveryDate?.message}
+              /> */}
+              <label className='label'>Fecha deseada de la entrega <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <DatePicker
+                selected={deliveryDate ? new Date(deliveryDate) : null}
+                onChange={(date) => setValue('desiredDeliveryDate', date)}
+                className="input"
+                dateFormat="dd/MM/yyyy"
+                locale="es"
+                placeholderText="dd/mm/yyyy"
+              />
+              <span className="error-text">{errors.desiredDeliveryDate?.message}</span>
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Objetivo del cambio o mejora</label>
-              <textarea placeholder="¿Cuál es el resultado esperado?" {...register('objective')} className="textarea" />
-              <p className="txt-red">{errors.objective?.message}</p>
+              <label className='label'>Tipo de solicitud</label>
+              <Controller control={control} name="requestType" render={({ field }) => (
+                <RadioGroup row {...field}>
+                  <FormControlLabel value="Nuevo desarrollo" control={<Radio />} label="Nuevo desarrollo" />
+                  <FormControlLabel value="Cambio / Mejora / Modificación de funcionalidad existente" control={<Radio />} label="Cambio / Mejora / Modificación de funcionalidad existente" />
+                  <FormControlLabel value="Corrección de errores" control={<Radio />} label="Corrección de errores" />
+                </RadioGroup>
+              )} />
+              <span className="error-text">{errors.requestType?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>¿Integración con otro sistema?</label>
+              <Controller control={control} name="integrationSystem" render={({ field }) => (
+                <RadioGroup row {...field}>
+                  <FormControlLabel value={'true'} control={<Radio />} label="Sí" />
+                  <FormControlLabel value={'false'} control={<Radio />} label="No" />
+                </RadioGroup>
+              )} />
+              <span className="error-text">{errors.integrationSystem?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>¿Involucra la carga de nuevos datos?</label>
+              <Controller control={control} name="involveNewData" render={({ field }) => (
+                <RadioGroup row {...field}>
+                  <FormControlLabel value={'true'} control={<Radio />} label="Sí" />
+                  <FormControlLabel value={'false'} control={<Radio />} label="No" />
+                </RadioGroup>
+              )} />
+              <span className="error-text">{errors.involveNewData?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>Descripción detallada del requerimiento<span style={{ color: theme.palette.error.main }}>*</span></label>
+              <textarea
+                className="textarea"
+                {...register('description')}
+                rows={3}
+                placeholder='Explique con precisión qué se solicita, el tipo de solicitud, cómo debe funcionar, a quién impacta y, si aplica, detalles técnicos relevantes.'
+              />
+              <span className="error-text">{errors.description?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>Objetivo o finalidad del requerimiento <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <textarea
+                {...register('objective')}
+                className="textarea"
+                rows={3}
+                placeholder='¿Cuál es el problema que se busca resolver o la necesidad que se atiende con este requerimiento? ¿Qué se espera lograr?'
+              />
+              <span className="error-text">{errors.objective?.message}</span>
+            </GridItem>
+            <GridItem lg={8} md={12}>
+              <label className='label'>Sustento normativo, documental, legal u oficial <span style={{ color: theme.palette.error.main }}>*</span></label>
+              <textarea
+                {...register('requirementJustification')}
+                className="textarea"
+                rows={3}
+                placeholder='Incluir la normativa, resolución, disposición legal, o documento oficial que respalde la solicitud, ya sea de su institución o de algún organismo parte del Estado Dominicano.'
+              />
+              {/* <input
+                type="file"
+                multiple
+                onChange={handleFilesChange}
+              />
+              {requirementJustification.length > 0 && (
+                <ul>
+                  {requirementJustification.map((file: File, index: number) => (
+                    <li key={index}>
+                      {file.name}{' '}
+                      <Button
+                        onClick={() => handleRemoveFile(index)}
+                        size='small'
+                        color='error'
+                        variant='contained'
+                      >
+                        Eliminar
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}*/}
+              <p className="error-text">{errors.requirementJustification?.message as string}</p>
             </GridItem>
           </GridContainer>
 
+          <Divider />
+
           {/* Alcance */}
-          <br />
+          {/* <br />
           <Typography variant="h6" color="info" gutterBottom>3. Alcance del Requerimiento</Typography>
           <br />
           <GridContainer>
@@ -267,7 +342,7 @@ export default function Home() {
                   <FormControlLabel value="Modificación" control={<Radio />} label="Modificación" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.developmentType?.message}</p>
+              <span className="error-text">{errors.developmentType?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
@@ -276,46 +351,56 @@ export default function Home() {
                 <RadioGroup
                   row
                   {...field}
-                  onChange={(e: any) => setValue('includesDataLoad', e?.target?.value === 'true' ? true : false)}
+                  onChange={(e: any) => {
+                    if (e?.target?.value === 'true') {
+                      setValue('includesDataLoad', true)
+                      setValue("dataFrequency", { ...dataFrequencyOptions[0] })
+                    } else {
+                      setValue('includesDataLoad', false)
+                    }
+                  }}
                 >
                   <FormControlLabel value={'true'} control={<Radio />} label="Sí" />
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.includesDataLoad?.message}</p>
+              <span className="error-text">{errors.includesDataLoad?.message}</span>
               {includesDataLoad && (
-                <GridContainer>
-                  <GridItem>
-                    <label className='label2'>Tipo de datos</label>
-                    <Select
-                      isMulti
-                      placeholder="Seleccionar"
-                      options={dataTypeOptions}
-                      onChange={(e: any) => setValue("dataType", e)}
-                    />
-                    <p className="txt-red">{errors.dataType?.message as string}</p>
-                  </GridItem>
+                <div style={{ padding: "15px" }}>
+                  <GridContainer>
+                    <GridItem lg={6}>
+                      <label className='label2'>Tipo de datos <span style={{ color: theme.palette.error.main }}>*</span></label>
+                      <Select
+                        isMulti
+                        placeholder="Seleccionar"
+                        options={dataTypeOptions}
+                        onChange={(e: any) => setValue("dataType", e)}
+                      />
+                      <span className="error-text">{errors.dataType?.message as string}</span>
+                    </GridItem> */}
 
-                  <GridItem>
-                    <label className='label2'>Fuente de los datos</label>
-                    <input {...register('dataSource')} className="input" />
-                    <p className="txt-red">{errors.dataSource?.message}</p>
-                  </GridItem>
+          {/* <GridItem>
+                      <label className='label2'>Fuente de los datos</label>
+                      <input {...register('dataSource')} className="input" />
+                      <p className="error-text">{errors.dataSource?.message}</p>
+                    </GridItem> */}
 
-                  <GridItem>
-                    <label className='label2'>Periodicidad de la carga</label>
-                    <Select
-                      placeholder="Seleccionar"
-                      options={dataFrequencyOptions}
-                      onChange={(e: any) => setValue("dataFrequency", e)}
-                    />
-                    <p className="txt-red">{errors.dataFrequency?.message as string}</p>
-                  </GridItem>
-                </GridContainer>
+          {/* <GridItem>
+                      <label className='label2'>Periodicidad de la carga</label>
+                      <Select
+                        placeholder="Seleccionar"
+                        defaultValue={dataFrequencyOptions[0]}
+                        options={dataFrequencyOptions}
+                        onChange={(e: any) => setValue("dataFrequency", e)}
+                      />
+                      <span className="error-text">{errors.dataFrequency?.message as string}</span>
+                    </GridItem>
+                  </GridContainer>
+                </div>
               )}
-            </GridItem>
+            </GridItem> */}
 
-            <GridItem lg={8} md={12}>
+          {/* <GridItem lg={8} md={12}>
               <label className='label'>¿Requiere actualización de metadatos?</label>
               <Controller control={control} name="metadataUpdate" render={({ field }) => (
                 <RadioGroup row {...field}>
@@ -323,10 +408,10 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.metadataUpdate?.message}</p>
-            </GridItem>
+              <p className="error-text">{errors.metadataUpdate?.message}</p>
+            </GridItem> */}
 
-            <GridItem lg={8} md={12}>
+          {/* <GridItem lg={8} md={12}>
               <label className='label'>¿Involucra integración con otros sistemas?</label>
               <Controller control={control} name="systemIntegration" render={({ field }) => (
                 <RadioGroup
@@ -338,22 +423,28 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.systemIntegration?.message}</p>
+              <span className="error-text">{errors.systemIntegration?.message}</span>
               {systemIntegration && (
-                <GridContainer>
-                  <GridItem>
-                    <label className='label2'>Especificar los sistemas</label>
-                    <input {...register('integratedSystems')} className="input" />
-                    <p className="txt-red">{errors.integratedSystems?.message}</p>
-                  </GridItem>
-                </GridContainer>
+                <div style={{ padding: "15px" }}>
+                  <GridContainer>
+                    <GridItem lg={6}>
+                      <label className='label2'>Especificar los sistemas <span style={{ color: theme.palette.error.main }}>*</span></label>
+                      <Input
+                        {...register('integratedSystems')}
+                        error={errors.integratedSystems?.message}
+                      />
+                    </GridItem>
+                  </GridContainer>
+                </div>
               )}
             </GridItem>
           </GridContainer>
 
+          <Divider /> */}
+
           {/* Impacto */}
           <br />
-          <Typography variant="h6" color="info" gutterBottom>4. Impacto del Cambio</Typography>
+          <Typography variant="h6" color="info" gutterBottom>3. Impacto de este Requerimiento</Typography>
           <br />
           <GridContainer>
             <GridItem lg={8} md={12}>
@@ -365,27 +456,32 @@ export default function Home() {
                   <FormControlLabel value="Baja" control={<Radio />} label="Baja" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.priority?.message}</p>
+              <span className="error-text">{errors.priority?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
-              <label className='label'>Justificación de la prioridad</label>
+              <label className='label'>Justificación de la prioridad <span style={{ color: theme.palette.error.main }}>*</span></label>
               <textarea
                 {...register('priorityJustification')}
                 className="textarea"
+                rows={3}
               />
-              <p className="txt-red">{errors.priorityJustification?.message}</p>
+              <span className="error-text">{errors.priorityJustification?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
               <label className='label'>¿Afecta la disponibilidad del portal?</label>
               <Controller control={control} name="affectsPortal" render={({ field }) => (
-                <RadioGroup row {...field}>
+                <RadioGroup
+                  row
+                  {...field}
+                  onChange={(e: any) => setValue('affectsPortal', e?.target?.value === 'true' ? true : false)}
+                >
                   <FormControlLabel value={'true'} control={<Radio />} label="Sí" />
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.affectsPortal?.message}</p>
+              <span className="error-text">{errors.affectsPortal?.message}</span>
             </GridItem>
 
             <GridItem lg={8} md={12}>
@@ -400,25 +496,33 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.requiresDowntime?.message}</p>
+              <span className="error-text">{errors.requiresDowntime?.message}</span>
               {requiresDowntime && (
-                <GridContainer>
-                  <GridItem>
-                    <label className='label2'>Tiempo estimado</label>
-                    <input {...register('estimatedDowntime')} className="input" />
-                    <p className="txt-red">{errors.estimatedDowntime?.message}</p>
-                  </GridItem>
-                </GridContainer>
+                <div style={{ padding: "15px" }}>
+                  <GridContainer>
+                    <GridItem>
+                      <label className='label2'>Tiempo estimado <span style={{ color: theme.palette.error.main }}>*</span></label>
+                      <Input
+                        {...register('estimatedDowntime')}
+                        error={errors.estimatedDowntime?.message}
+                      />
+                    </GridItem>
+                  </GridContainer>
+                </div>
               )}
             </GridItem>
           </GridContainer>
 
-
+          <Divider />
 
           {/* Adjuntos */}
           <br />
-          <Typography variant="h6" color="info" gutterBottom>5. Documentación Adjunta</Typography>
-          <br />
+          <Typography variant="h6" color="info" gutterBottom>4. Documentación Adjunta</Typography>
+          <Alert severity="info" sx={{ mb: 4 }}>
+            Favor adjuntar en este espacio los documentos necesarios para facilitar la realización del trabajo requerido, ya sea en su fase de diseño, desarrollo o implementación, según corresponda a lo solicitado.
+            <br />
+            Asimismo, detalle si así lo desea en el campo <b>'Notas adicionales'</b> los recursos, materiales o herramientas que considere necesarios para cumplir con lo solicitado.
+          </Alert>
           <GridContainer>
             <GridItem lg={12} md={12}>
               <label className='label'>¿Incluye archivos adjuntos?</label>
@@ -432,8 +536,24 @@ export default function Home() {
                   <FormControlLabel value={'false'} control={<Radio />} label="No" />
                 </RadioGroup>
               )} />
-              <p className="txt-red">{errors.includesAttachments?.message}</p>
-              {includesAttachments && (
+              <span className="error-text">{errors.includesAttachments?.message}</span>
+              {includesAttachments &&
+                <div style={{ padding: "15px" }}>
+                  <GridContainer>
+                    <GridItem lg={8} md={12}>
+                      <label className='label2'>Incluir adjuntos <span style={{ color: theme.palette.error.main }}>*</span></label>
+                      <textarea
+                        {...register('attachments')}
+                        className="textarea"
+                        rows={3}
+                        placeholder='Indique los enlaces de los documentos adjuntos, por ejemplo: https://miportal.gob.do/docs/informe-tecnico.pdf'
+                      />
+                      <span className="error-text">{errors.attachments?.message}</span>
+                    </GridItem>
+                  </GridContainer>
+                </div>
+              }
+              {/* {includesAttachments && (
                 <GridContainer>
                   <GridItem lg={12} md={12}>
                     <label className='label2'>Especificar los archivos</label>
@@ -459,29 +579,39 @@ export default function Home() {
                         ))}
                       </ul>
                     )}
-                    <p className="txt-red">{errors.attachments?.message as string}</p>
+                    <p className="error-text">{errors.attachments?.message as string}</p>
                   </GridItem>
                 </GridContainer>
-              )}
+              )} */}
             </GridItem>
-          </GridContainer>
-          <br />
-          <GridContainer>
+
             <GridItem lg={8} md={12}>
               <label className='label'>Notas adicionales</label>
-              <textarea {...register('additionalNotes')} className="textarea" />
+              <textarea
+                {...register('additionalNotes')}
+                className="textarea"
+                rows={3}
+              />
             </GridItem>
             <GridItem lg={8} md={12}>
-              <label className='label'>Correos electrónicos a copiar</label>
-              <input {...register('copyEmails')} className="input mt-2" />
+              <Input
+                label='Correos electrónicos para incluir en copia'
+                {...register('copyEmails')}
+                error={errors.copyEmails?.message}
+              />
             </GridItem>
           </GridContainer>
           <br />
-          <Button type="submit" variant="contained" color="primary" className="mt-6">
+          <Button loading={loading} type="submit" variant="contained" color="primary" className="mt-6">
             Enviar
           </Button>
         </form>
+        <Alert severity="info" sx={{ mt: 4, fontWeight: "bold" }}>
+          Este formulario generará un ticket automáticamente al ser enviado.
+        </Alert>
       </div>
-    </Container >
+      <br />
+      <SLACard />
+    </Container>
   );
 }
