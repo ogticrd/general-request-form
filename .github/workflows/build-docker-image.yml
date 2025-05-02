@@ -85,6 +85,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
+          build-args: |
+            NEXT_PUBLIC_GENERAL_REQUEST_URL=${{ secrets.NEXT_PUBLIC_GENERAL_REQUEST_URL }}
 
           # To improve build speeds, for each branch we push an additional image to the registry,
           # to be used as the caching layer, using the `max` caching mode.
