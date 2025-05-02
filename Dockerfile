@@ -15,9 +15,11 @@ FROM node:${NODE_VERSION}-alpine AS base
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
 
+# ==== App specific variables
+ARG NEXT_PUBLIC_GENERAL_REQUEST_URL
+ENV NEXT_PUBLIC_GENERAL_REQUEST_URL=${NEXT_PUBLIC_GENERAL_REQUEST_URL}
+
 # Configuración de PNPM
-
-
 # Install pnpm.
 # Install corepack and set pnpm as default package manager
 ENV PNPM_HOME="/pnpm"
